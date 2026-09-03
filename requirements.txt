@@ -1,0 +1,31 @@
+# --- Core ---
+python-dotenv==1.0.1
+pydantic==2.9.2
+
+# --- Data / ML (traditional) ---
+numpy==1.26.4
+pandas==2.2.3
+scikit-learn==1.5.2
+
+# --- Deep learning (GPU: CUDA 13.0 wheel — installed separately, see README) ---
+# torch / torchvision / torchaudio installed via:
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
+transformers==4.45.2
+sentence-transformers==3.2.1
+
+# --- RAG / vector store ---
+faiss-cpu==1.9.0
+
+# --- LLM ---
+groq==0.11.0
+
+# --- Datasets ---
+datasets==3.0.1
+
+# --- Serving ---
+streamlit==1.39.0
+fastapi==0.115.0
+uvicorn[standard]==0.31.0
+
+# --- Testing ---
+pytest==8.3.3

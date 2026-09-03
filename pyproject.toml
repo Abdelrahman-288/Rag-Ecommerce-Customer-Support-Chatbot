@@ -1,0 +1,9 @@
+[project]
+name = "rag-ecommerce-customer-support-chatbot"
+version = "0.1.0"
+description = "End-to-end RAG-based e-commerce customer support chatbot with language detection, sentiment analysis, intent classification, semantic retrieval, and grounded LLM responses."
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
