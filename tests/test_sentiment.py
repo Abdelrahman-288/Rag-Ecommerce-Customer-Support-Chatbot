@@ -35,3 +35,20 @@ def test_predict_sentiment_plain_support_question_is_neutral():
 def test_predict_sentiment_confidence_is_valid_probability():
     result = predict_sentiment("How do I reset my password?")
     assert 0.0 <= result["confidence"] <= 1.0
+
+
+def test_predict_sentiment_negation_handling():
+    """Regression test for the negation bug found during Stage 8 live
+    testing -- negated positive statements were misclassified as
+    Positive/Satisfied before the negation-aware augmentation fix.
+    """
+    result = predict_sentiment("this is not acceptable")
+    assert result["sentiment"] == "Negative/Frustrated"
+
+
+def test_predict_sentiment_negated_negative_not_overcorrected():
+    """Companion test to the negation fix above -- confirms the fix
+    didn't overcorrect into 'negation always means negative'.
+    """
+    result = predict_sentiment("this wasn't a bad experience at all")
+    assert result["sentiment"] == "Positive/Satisfied"

@@ -7,9 +7,15 @@ support questions (e.g. "Where is my package?") as Negative/Frustrated with
 high confidence -- there's no Twitter-style emotional language to anchor on,
 so the model falls back on weak, misleading signal.
 
-Extra weight is given to Neutral, since that's both the smallest class in
-the original mapped label space AND the one most responsible for the
-misclassification of ordinary support questions.
+A second batch addresses negation handling: the model separately struggled
+with negated positive statements ("this is NOT acceptable" -> misread as
+Positive), likely because the training data contains few negated-evaluative
+examples. Negated-negative examples are included alongside negated-positive
+ones to avoid overcorrecting into "negation always means negative."
+
+Extra weight is given to Neutral in the first batch, since that's both the
+smallest class in the original mapped label space AND the one most
+responsible for the misclassification of ordinary support questions.
 """
 
 SENTIMENT_AUGMENTED_EXAMPLES = [
@@ -56,4 +62,23 @@ SENTIMENT_AUGMENTED_EXAMPLES = [
     ("thank you for the fast refund", "Positive/Satisfied"),
     ("i'm glad this got sorted out so quickly", "Positive/Satisfied"),
     ("great support, exactly what i needed", "Positive/Satisfied"),
+
+    # --- Negative/Frustrated: negated positive statements (negation fix) ---
+    ("this is not acceptable", "Negative/Frustrated"),
+    ("this is not okay", "Negative/Frustrated"),
+    ("this is not good enough", "Negative/Frustrated"),
+    ("this is not what i expected", "Negative/Frustrated"),
+    ("this is not fair", "Negative/Frustrated"),
+    ("that is not helpful at all", "Negative/Frustrated"),
+    ("this service is not good", "Negative/Frustrated"),
+    ("i am not happy with this", "Negative/Frustrated"),
+    ("i am not satisfied with my order", "Negative/Frustrated"),
+    ("this does not work at all", "Negative/Frustrated"),
+    ("this is not the quality i paid for", "Negative/Frustrated"),
+    ("that was not a good experience", "Negative/Frustrated"),
+
+    # --- Positive/Satisfied: negated negative statements (avoid overcorrecting) ---
+    ("this wasn't a bad experience at all", "Positive/Satisfied"),
+    ("i have no complaints about this service", "Positive/Satisfied"),
+    ("this isn't disappointing at all, quite the opposite", "Positive/Satisfied"),
 ]
