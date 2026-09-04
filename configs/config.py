@@ -24,4 +24,4 @@ EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 GROQ_MODEL_NAME = "gpt-oss-120b"
 
 # --- Routing ---
-INTENT_CONFIDENCE_THRESHOLD = 0.6
+INTENT_CONFIDENCE_THRESHOLD = 0.55
