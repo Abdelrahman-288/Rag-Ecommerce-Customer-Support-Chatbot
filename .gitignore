@@ -20,5 +20,9 @@ vector_store/*
 reports/figures/*
 !reports/figures/.gitkeep
 
+# User-generated runtime feedback data — not a training/evaluation
+# deliverable, and may contain arbitrary user input over time.
+reports/evaluation/feedback_log.csv
+
 .DS_Store
 Thumbs.db

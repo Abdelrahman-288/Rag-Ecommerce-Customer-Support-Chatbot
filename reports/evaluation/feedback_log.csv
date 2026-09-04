@@ -1,2 +1,0 @@
-timestamp,user_message,assistant_response,language,sentiment,intent,route,feedback
-2026-09-04T11:39:22.748322+00:00,Where is my order?,"I’m sorry—I don’t have the information needed to locate your specific order. Please reach out to our support team with your order number (you’ll find it in the confirmation email you received) so they can provide you with the current status. If you’d like, I can help you connect with a live representative.",en,Neutral,order_status,rag,up
