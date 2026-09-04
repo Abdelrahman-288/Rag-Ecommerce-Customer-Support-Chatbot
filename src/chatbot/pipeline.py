@@ -58,7 +58,10 @@ def process_message(user_message: str) -> ChatbotResponse:
 
     # --- Routing decision ---
     route = determine_route(
-        intent_result["intent"], intent_result["confidence"], intent_result["source"]
+        intent_result["intent"],
+        intent_result["confidence"],
+        intent_result["source"],
+        sentiment=sentiment_result["sentiment"],
     )
     logger.info("Route: %s", route)
 

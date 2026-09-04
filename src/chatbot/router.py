@@ -12,7 +12,7 @@ Routing table (per project spec, Stage 22):
 
 import logging
 
-from configs.config import INTENT_CONFIDENCE_THRESHOLD
+from configs.config import INTENT_CONFIDENCE_THRESHOLD, INTENT_NOISE_FLOOR
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ REFUSAL_RESPONSE = (
 )
 
 
-def determine_route(intent: str, confidence: float, source: str) -> str:
+def determine_route(intent: str, confidence: float, source: str, sentiment: str | None = None) -> str:
     """Decide the routing path for a given intent prediction.
 
     Rule-based small-talk predictions (source='rule') are always trusted at
@@ -44,21 +44,43 @@ def determine_route(intent: str, confidence: float, source: str) -> str:
     out_of_scope handling as a safe fallback -- per Stage 15 of the spec,
     an uncertain prediction should not be blindly trusted.
 
-    Exception: 'complaint' is never downgraded by the confidence threshold.
-    Per the project spec, complaints must be flagged for priority handling
-    regardless of classifier confidence -- a low-confidence complaint is
-    still more likely a genuine complaint than a false positive, and the
-    cost of missing a real complaint (leaving a frustrated customer with a
-    generic refusal) is far higher than the cost of over-escalating.
+    Two exceptions to that downgrade:
+    1. 'complaint' is never downgraded -- per the project spec, complaints
+       must be flagged for priority handling regardless of classifier
+       confidence.
+    2. A low-but-not-negligible-confidence prediction (between
+       INTENT_NOISE_FLOOR and INTENT_CONFIDENCE_THRESHOLD) paired with
+       strongly Negative/Frustrated sentiment is treated as an unclear
+       complaint rather than out_of_scope -- sentiment is a second,
+       independent signal that the message is a real, upset customer even
+       when the specific intent is ambiguous.
+
+    Below INTENT_NOISE_FLOOR, the prediction is too unreliable to trust for
+    any purpose, including escalation -- e.g. gibberish input can trigger
+    a spuriously confident sentiment label alongside a near-random intent
+    guess, and escalating that to a human agent queue would be a false
+    positive we want to avoid.
     """
-    if source == "model" and confidence < INTENT_CONFIDENCE_THRESHOLD and intent != COMPLAINT_INTENT:
-        logger.info(
-            "Low-confidence intent '%s' (%.2f) below threshold %.2f — routing as out_of_scope",
-            intent,
-            confidence,
-            INTENT_CONFIDENCE_THRESHOLD,
-        )
-        intent = OUT_OF_SCOPE_INTENT
+    low_confidence = source == "model" and confidence < INTENT_CONFIDENCE_THRESHOLD
+    is_noise = source == "model" and confidence < INTENT_NOISE_FLOOR
+
+    if low_confidence and intent != COMPLAINT_INTENT:
+        if not is_noise and sentiment == "Negative/Frustrated":
+            logger.info(
+                "Low-confidence intent '%s' (%.2f) but sentiment is Negative/Frustrated "
+                "— routing as complaint-style escalation instead of refusal",
+                intent,
+                confidence,
+            )
+            intent = COMPLAINT_INTENT
+        else:
+            logger.info(
+                "Low-confidence intent '%s' (%.2f) below threshold %.2f — routing as out_of_scope",
+                intent,
+                confidence,
+                INTENT_CONFIDENCE_THRESHOLD,
+            )
+            intent = OUT_OF_SCOPE_INTENT
 
     if intent in DIRECT_INTENTS:
         return "direct"

@@ -25,3 +25,4 @@ GROQ_MODEL_NAME = "openai/gpt-oss-120b"  # verified against Groq's model list, S
 
 # --- Routing ---
 INTENT_CONFIDENCE_THRESHOLD = 0.55
+INTENT_NOISE_FLOOR = 0.3  # below this, treat as noise regardless of sentiment

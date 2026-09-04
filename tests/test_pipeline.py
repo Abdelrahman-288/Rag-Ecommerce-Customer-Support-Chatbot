@@ -70,3 +70,19 @@ def test_pipeline_response_structure_has_all_fields(mock_generate):
     assert result.intent is not None
     assert result.route is not None
     assert isinstance(result.retrieved_documents, list)
+
+@patch("src.chatbot.pipeline.generate_response")
+def test_pipeline_low_confidence_but_frustrated_routes_to_escalation(mock_generate):
+    mock_generate.return_value = "Mocked empathetic response."
+    result = process_message("This is unacceptable, I want a refund now!")
+    assert result.route == "rag_escalate"
+    assert result.escalate is True
+
+
+def test_pipeline_pure_noise_still_routes_to_refusal():
+    """Regression test: very low confidence (below the noise floor) must
+    route to refusal even if sentiment is spuriously detected as negative --
+    gibberish shouldn't reach the human escalation queue.
+    """
+    result = process_message("asdkjaslkdj random gibberish text")
+    assert result.route == "refusal"
