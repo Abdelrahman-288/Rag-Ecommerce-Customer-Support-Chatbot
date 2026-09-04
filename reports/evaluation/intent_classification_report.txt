@@ -1,0 +1,12 @@
+                     precision    recall  f1-score   support
+
+ account_management       1.00      1.00      1.00       804
+billing_and_refunds       1.00      1.00      1.00       955
+          complaint       1.00      1.00      1.00       299
+   order_management       1.00      0.99      1.00       484
+       order_status       0.99      1.00      0.99       364
+       out_of_scope       1.00      1.00      1.00       736
+
+           accuracy                           1.00      3642
+          macro avg       1.00      1.00      1.00      3642
+       weighted avg       1.00      1.00      1.00      3642
