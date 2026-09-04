@@ -14,6 +14,8 @@ import logging
 import pandas as pd
 from datasets import load_dataset
 
+from src.sentiment.augmentation_data import SENTIMENT_AUGMENTED_EXAMPLES
+
 logger = logging.getLogger(__name__)
 
 # dair-ai/emotion integer label -> emotion name (per dataset card)
@@ -44,8 +46,14 @@ SENTIMENT_TO_ID = {label: i for i, label in enumerate(SENTIMENT_LABELS)}
 ID_TO_SENTIMENT = {i: label for label, i in SENTIMENT_TO_ID.items()}
 
 
-def load_emotion_dataset() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def load_emotion_dataset(augment: bool = True) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Load dair-ai/emotion as pandas DataFrames with mapped sentiment labels.
+
+    If augment=True (default), a small set of hand-written, naturally-phrased
+    customer-support examples (see augmentation_data.py) is appended to the
+    TRAINING split only -- never to val/test. This corrects the model's
+    tendency to misread plain support questions as Negative/Frustrated,
+    without touching the metrics we report (see Stage 7 finding).
 
     Returns
     -------
@@ -65,6 +73,17 @@ def load_emotion_dataset() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     train_df = to_mapped_df(dataset["train"])
     val_df = to_mapped_df(dataset["validation"])
     test_df = to_mapped_df(dataset["test"])
+
+    if augment:
+        aug_df = pd.DataFrame(SENTIMENT_AUGMENTED_EXAMPLES, columns=["text", "sentiment"])
+        aug_df["emotion"] = "synthetic"  # not a real dair-ai emotion; flags these rows if inspected
+        aug_df["sentiment_id"] = aug_df["sentiment"].map(SENTIMENT_TO_ID)
+        aug_df = aug_df[["text", "emotion", "sentiment", "sentiment_id"]]
+        train_df = pd.concat([train_df, aug_df], ignore_index=True)
+        logger.info(
+            "Added %d hand-written naturally-phrased examples to training split only",
+            len(aug_df),
+        )
 
     logger.info(
         "Loaded dataset — train: %d, val: %d, test: %d rows",
