@@ -204,6 +204,18 @@ Documented honestly, as this is not a production-ready system:
   confidence on the original failing example rose from misclassifying at
   high confidence to correctly classifying at 99.98% confidence, with no
   regression on negated-negative or earlier domain-shift test cases.
+  - **Non-English input to English-only stages**: language detection is
+  genuinely multilingual (20 languages), but sentiment and intent
+  classification are trained only on English data (`dair-ai/emotion` and
+  the Bitext dataset). On non-English input, these two stages produce
+  unreliable results — e.g. a neutral Chinese question ("我的订单在哪里?")
+  was misclassified as 96%-confidence Negative/Frustrated. The system
+  degrades safely rather than acting on this bad signal: low intent
+  confidence on non-English text typically falls below the noise floor
+  and correctly routes to a polite refusal rather than a false escalation
+  or a hallucinated response — verified via manual testing across Chinese,
+  Spanish, French, and other non-English queries.
+- **Emotion-to-sentiment mapping**: `surprise` is mapped to Neutral as an
 - **Emotion-to-sentiment mapping**: `surprise` is mapped to Neutral as an
   approximation — surprise can be genuinely positive or negative depending
   on context, and the dataset doesn't disambiguate this.
