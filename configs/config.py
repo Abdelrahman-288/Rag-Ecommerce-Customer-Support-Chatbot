@@ -21,7 +21,7 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 # --- Model settings (filled in as later stages are implemented) ---
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-GROQ_MODEL_NAME = "gpt-oss-120b"
+GROQ_MODEL_NAME = "openai/gpt-oss-120b"  # verified against Groq's model list, Sept 2026
 
 # --- Routing ---
 INTENT_CONFIDENCE_THRESHOLD = 0.55
