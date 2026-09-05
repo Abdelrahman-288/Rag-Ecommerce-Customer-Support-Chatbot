@@ -108,9 +108,12 @@ def process_message(user_message: str) -> ChatbotResponse:
 
 
 if __name__ == "__main__":
-    import logging as _logging
+    import sys
+    from src.utils.logging_config import setup_logging
 
-    _logging.basicConfig(level=_logging.INFO)
+    setup_logging()
+    if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
 
     test_messages = [
         "Hi there!",

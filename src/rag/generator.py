@@ -57,11 +57,13 @@ def generate_response(
 
 
 if __name__ == "__main__":
-    import logging as _logging
-
+    import sys
     from src.rag.retriever import retrieve_documents
+    from src.utils.logging_config import setup_logging
 
-    _logging.basicConfig(level=_logging.INFO)
+    setup_logging()
+    if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
 
     test_query = "How can I get a refund?"
     docs = retrieve_documents(test_query, top_k=3)

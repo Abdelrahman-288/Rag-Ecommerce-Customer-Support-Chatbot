@@ -20,14 +20,25 @@ logger = logging.getLogger(__name__)
 # than recall here — a missed greeting just falls through to the ML model
 # and likely lands in out_of_scope, which is a safe failure mode.
 GREETING_PATTERNS = re.compile(
-    r"^\s*(hi|hello|hey|good (morning|afternoon|evening)|greetings)\b", re.IGNORECASE
+    r"^\s*(hi(\s+there)?|hello(\s+there)?|hey(\s+there)?|good\s+(morning|afternoon|evening)|greetings)\b",
+    re.IGNORECASE,
 )
 GOODBYE_PATTERNS = re.compile(
-    r"\b(bye|goodbye|good bye|see you|take care|farewell)\b", re.IGNORECASE
+    r"\b(bye(\s+bye)?|goodbye|good\s+bye|see\s+you(\s+later)?|take\s+care|farewell)\b",
+    re.IGNORECASE,
 )
 GRATITUDE_PATTERNS = re.compile(
-    r"\b(thanks|thank you|thx|appreciate it|much appreciated)\b", re.IGNORECASE
+    r"\b(thanks(\s+(a\s+lot|so\s+much|very\s+much))?|thank\s+you(\s+(so\s+much|very\s+much))?|thx|appreciate\s+it|much\s+appreciated)\b",
+    re.IGNORECASE,
 )
+
+# Common conversational filler words allowed in pure small talk
+SMALL_TALK_FILLERS = {
+    "there", "all", "everyone", "bot", "assistant", "team", "support",
+    "friend", "you", "so", "much", "very", "a", "lot", "for", "your",
+    "the", "help", "talk", "later", "again", "soon", "now", "have",
+    "good", "great", "day", "one", "guys", "folks", "to", "and",
+}
 
 _model = None
 _vectorizer = None
@@ -43,19 +54,36 @@ def _load_model():
 
 
 def detect_small_talk(text: str) -> str | None:
-    """Return 'greeting' / 'goodbye' / 'gratitude' if text matches a
-    closed-vocabulary small-talk pattern, else None.
+    """Return 'greeting' / 'goodbye' / 'gratitude' if text is standalone
+    small talk, or None if it contains substantive customer support queries.
 
-    Checked in this order because a message could contain both a greeting
-    and thanks ("hi, thanks for the help") — greeting is checked first as
-    it's most often the true intent of the message opener.
+    Checked in priority order. If small talk tokens match, remaining words
+    are checked to ensure the user isn't asking a real question (e.g.
+    'Hello, where is my order?' falls through to the ML model).
     """
-    if GREETING_PATTERNS.search(text):
-        return "greeting"
-    if GOODBYE_PATTERNS.search(text):
-        return "goodbye"
-    if GRATITUDE_PATTERNS.search(text):
-        return "gratitude"
+    cleaned = text.lower().strip()
+
+    m = GREETING_PATTERNS.search(cleaned)
+    if m:
+        remaining = GREETING_PATTERNS.sub("", cleaned).strip()
+        remaining_words = [w for w in re.findall(r"\w+", remaining) if w not in SMALL_TALK_FILLERS]
+        if not remaining_words:
+            return "greeting"
+
+    m = GOODBYE_PATTERNS.search(cleaned)
+    if m:
+        remaining = GOODBYE_PATTERNS.sub("", cleaned).strip()
+        remaining_words = [w for w in re.findall(r"\w+", remaining) if w not in SMALL_TALK_FILLERS]
+        if not remaining_words:
+            return "goodbye"
+
+    m = GRATITUDE_PATTERNS.search(cleaned)
+    if m:
+        remaining = GRATITUDE_PATTERNS.sub("", cleaned).strip()
+        remaining_words = [w for w in re.findall(r"\w+", remaining) if w not in SMALL_TALK_FILLERS]
+        if not remaining_words:
+            return "gratitude"
+
     return None
 
 

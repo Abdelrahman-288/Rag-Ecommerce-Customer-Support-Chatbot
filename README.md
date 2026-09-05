@@ -43,7 +43,7 @@ flowchart TD
 - **RAG pipeline**: sentence-transformer embeddings, FAISS vector store (24,274 indexed knowledge-base entries), Groq-hosted LLM generation grounded strictly in retrieved context
 - **Confidence-aware, sentiment-aware routing**: multi-signal routing logic that avoids both false-confidence hallucination and cold, unhelpful refusals for genuinely upset customers
 - **Two interfaces sharing one pipeline**: Streamlit (interactive chat with a full pipeline-details debug panel) and FastAPI (`POST /chat`) — zero duplicated NLP/RAG logic
-- **Automated test suite**: 33 tests covering every model and routing path, with the external Groq API mocked for fast, network-independent runs
+- **Automated test suite**: 69 tests covering API endpoints, every model, and full routing paths, with the external Groq API mocked for fast, network-independent runs
 
 ## Project Structure
 
@@ -146,10 +146,10 @@ or `POST` to `http://localhost:8000/chat` with `{"message": "..."}`.
 pytest -v
 ```
 
-33 tests covering language detection, sentiment, intent, retrieval, and
-full pipeline routing (including edge cases for low-confidence and
-sentiment-aware escalation). The Groq API is mocked, so tests run in
-seconds with no network dependency or API cost.
+69 tests covering API endpoints, language detection, sentiment, intent, retrieval,
+and full pipeline routing (including edge cases for low-confidence, compound
+greetings, and sentiment-aware escalation). The Groq API is mocked, so tests run
+in seconds with no network dependency or API cost.
 
 ## Evaluation
 

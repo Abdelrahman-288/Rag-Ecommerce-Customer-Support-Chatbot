@@ -47,3 +47,20 @@ def test_predict_intent_model_based_billing():
 def test_predict_intent_confidence_is_valid_probability():
     result = predict_intent("How do I reset my password?")
     assert 0.0 <= result["confidence"] <= 1.0
+
+
+def test_detect_small_talk_compound_messages_return_none():
+    assert detect_small_talk("Hello, where is my order?") is None
+    assert detect_small_talk("Hi, I want a refund") is None
+    assert detect_small_talk("Good morning, can you cancel my order?") is None
+    assert detect_small_talk("Thanks in advance, where is my package?") is None
+
+
+def test_predict_intent_compound_messages_fall_through_to_model():
+    result = predict_intent("Hello, where is my order?")
+    assert result["intent"] == "order_status"
+    assert result["source"] == "model"
+
+    result_refund = predict_intent("Hi, I want a refund for my broken item")
+    assert result_refund["intent"] == "billing_and_refunds"
+    assert result_refund["source"] == "model"

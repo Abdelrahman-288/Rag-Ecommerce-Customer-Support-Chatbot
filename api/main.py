@@ -5,6 +5,7 @@ Exposes POST /chat, reusing the exact same pipeline as the Streamlit app
 """
 
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -15,6 +16,18 @@ from src.utils.logging_config import setup_logging
 setup_logging()
 logger = logging.getLogger(__name__)
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Load all models once at server startup rather than on the first
+    real request, avoiding a slow first response.
+    """
+    logger.info("Warming up pipeline (loading models)...")
+    process_message("hello")
+    logger.info("Pipeline ready.")
+    yield
+
+
 app = FastAPI(
     title="E-commerce Support Chatbot API",
     description=(
@@ -22,6 +35,7 @@ app = FastAPI(
         "sentiment analysis, intent classification, and grounded retrieval."
     ),
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 
@@ -41,16 +55,6 @@ class ChatResponse(BaseModel):
     retrieved_documents: list[dict]
     response: str
     escalate: bool
-
-
-@app.on_event("startup")
-def warm_up_pipeline() -> None:
-    """Load all models once at server startup rather than on the first
-    real request, avoiding a slow first response.
-    """
-    logger.info("Warming up pipeline (loading models)...")
-    process_message("hello")
-    logger.info("Pipeline ready.")
 
 
 @app.get("/")
